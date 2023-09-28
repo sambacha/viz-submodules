@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
-"""
-Parse a repo and display its structure or submodule paths.
-"""
-
 import os
 import configparser
 import pydot
 import click
 
+"""
+Usage: python3 paths.py $HOME/your/git/repo --mode paths
+
+Output:
+/home/user/your/git/repo/sub/modules/etc
+"""
 
 class Tree:
     def __init__(self, data=None):
@@ -47,6 +49,15 @@ class Tree:
         for child in self.children:
             child.display(indentation + 1, with_url)
 
+    def collect_submodule_paths(self):
+        """Recursively collect the absolute paths of all submodules."""
+        paths = []
+        if self.data and self.data.get("path"):
+            paths.append(self.data["path"])
+        for child in self.children:
+            paths.extend(child.collect_submodule_paths())
+        return paths
+
     def build_graph(self, graph, parent, indentation, graph_mode, with_url):
         """Recursively build a pydot graph from the tree structure."""
         label = self._get_label(with_url, "\n")
@@ -66,6 +77,7 @@ class Tree:
             )
             indentation += 1
         return graph, indentation
+
 
     def _get_label(self, with_url, sep=" - "):
         """Retrieve the label for the current node, optionally including the URL."""
@@ -138,7 +150,7 @@ def parse_repo(path, relpath=None, url=None):
     "-r",
     "--relative-path",
     default=False,
-    is_flag=Tru
+    is_flag=True,
     show_default=True,
     help="Show relative path",
 )
@@ -154,10 +166,11 @@ def main(mode, repo, with_url, relative_path):
         tree.display(with_url=with_url)
     elif mode == "paths":
         paths = tree.collect_submodule_paths()
-        paths.sort()  # Sort the submodule paths
+        paths.sort()
         for path in paths:
             print(path)
 
 
 if __name__ == "__main__":
+    # main(mode="text", repo=".", with_url=False, relative_path=False)
     main()
