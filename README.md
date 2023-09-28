@@ -1,5 +1,8 @@
 # `viz-submodules`
 
+Generate dependency graph (a naive one) in DOT notation. 
+
+> Inspired by https://github.com/jrfonseca/xdot.py but without the GUI
 
 ## Setup
 
